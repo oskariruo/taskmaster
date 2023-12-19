@@ -1,25 +1,48 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from "react";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import Yesterday from "./pages/Yesterday";
+import Today from "./pages/Today";
+import Tomorrow from "./pages/Tomorrow";
 
-function App() {
+export default function App() {
+
+  const [tasks, setTasks] = useState([]);
+
+  const addTask = (task) => {
+    setTasks([...tasks, { text: task, status: 'today'}]);
+  };
+
+  const moveTasksBasedOnDay = () => {
+    const updateTasks = tasks.map(task => {
+      switch (task.status) {
+        case 'today':
+          return {...task, status: 'yesterday'};
+        case 'tomorrow':
+          return {...task, status: 'today'};
+          default:
+            return task;
+      }
+    });
+    setTasks(updateTasks)
+  };
+
+  useEffect(() => {
+    moveTasksBasedOnDay();
+  }, []);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Switch>
+        <Route path="/yesterday">
+          <Yesterday tasks={tasks} />
+        </Route>
+        <Route path="/today">
+          <Today tasks={tasks} />
+        </Route>
+        <Route path="/tomorrow">
+          <Tomorrow tasks={tasks} />
+        </Route>
+      </Switch>
+      </Router>
   );
 }
 
-export default App;
