@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Button, Input, Box } from "@mui/material";
 
 export default function TaskForm( { addTask }){
     const [newTask, setNewTask] = useState('');
@@ -15,14 +16,14 @@ export default function TaskForm( { addTask }){
     };
 
     return (
-        <div>
-            <input
+        <Box>
+            <Input
                 type='text'
                 placeholder='Add a new task...'
                 value={newTask}
                 onChange={handleInputChange}
             />
-            <button onClick={handleAddTask}>Add Task</button>
-        </div>
+            <Button onClick={handleAddTask}>Add Task</Button>
+        </Box>
     );
 };
