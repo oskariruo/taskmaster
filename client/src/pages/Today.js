@@ -11,5 +11,5 @@ export default function Today({tasks, addTask, completeTask }){
             <TaskList tasks={tasks} onComplete={completeTask} />
             <TaskForm addTask={addTask} />
         </div>
-    )
+    );
 }
