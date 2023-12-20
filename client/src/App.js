@@ -7,7 +7,6 @@ import Tomorrow from "./pages/Tomorrow";
 
 export default function App() {
   const [tasks, setTasks] = useState([]);
-
   const [darkMode, setDarkMode] = useState(false);
 
   const toggleTheme = () => {
@@ -23,7 +22,7 @@ export default function App() {
   const addTask = (task, status) => {
     const currentDate = new Date();
     let taskDate;
-  
+
     switch (status) {
       case "today":
         taskDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
@@ -38,7 +37,7 @@ export default function App() {
       default:
         taskDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
     }
-  
+
     setTasks([...tasks, { id: tasks.length + 1, text: task, status, date: taskDate }]);
   };
 
@@ -55,24 +54,22 @@ export default function App() {
 
   const moveTasksBasedOnDay = () => {
     const currentDate = new Date();
-    const updateTasks = tasks.map((task) => {
+    const updatedTasks = tasks.map((task) => {
       const taskDate = new Date(task.date);
       const isToday = isSameDay(taskDate, currentDate);
       const isTomorrow = isSameDay(new Date(currentDate.getTime() + 24 * 60 * 60 * 1000), taskDate);
-  
+
       switch (task.status) {
         case "today":
-          if (!isToday) return { ...task, status: "yesterday" };
-          break;
+          return !isToday ? { ...task, status: "yesterday" } : task;
         case "tomorrow":
-          if (!isTomorrow) return { ...task, status: "today" };
-          break;
+          return !isTomorrow ? { ...task, status: "today" } : task;
         default:
           return task;
       }
-      return task;
     });
-    setTasks(updateTasks);
+
+    setTasks(updatedTasks);
   };
 
   const isSameDay = (date1, date2) => {
@@ -85,15 +82,9 @@ export default function App() {
       d1.getDate() === d2.getDate()
     );
   };
-
+// eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (tasks.length > 0) {
-      moveTasksBasedOnDay();
-    }
-  }, [tasks]);
-
-  useEffect(() => {
-    setTasks([]);
+    moveTasksBasedOnDay();
   }, []);
 
   const router = createBrowserRouter([
