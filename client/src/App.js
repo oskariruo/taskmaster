@@ -86,12 +86,10 @@ export default function App() {
         throw new Error(`Failed to delete task: ${response.statusText}`);
       }
 
-      // Update state after successful deletion
       fetchTasks();
     } catch (error) {
       console.error(error);
     } finally {
-      // Close the confirmation dialog regardless of the deletion result
       closeConfirmationDialog();
     }
   };
