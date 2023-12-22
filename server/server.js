@@ -1,48 +1,30 @@
+// server.js
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors');
+const dbConfig = require('./config/db');
+const routes = require('./routes/tasks');
+
+
 const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 const port = process.env.PORT || 3001;
 
-mongoose.connect('mongodb://localhost/taskmaster', { useNewUrlParser: true, useUnifiedTopology: true});
-const db = mongoose.connection;
 
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-db.once('open', () => {
-    console.log('Connected to MongoDB');
-});
 
-const taskSchema = new mongoose.Schema({
-    text: String,
-    status: String,
-});
+// Connect to MongoDB Atlas
+mongoose.connect(dbConfig.mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('Connected to MongoDB Atlas'))
+  .catch(err => console.error('Error connecting to MongoDB Atlas:', err));
 
-const Task = mongoose.model('Task', taskSchema);
+// Use routes
+app.use('/tasks', routes); // Using /api as a base route
 
-app.use(express.json());
-
-app.get('/tasks', async (req, res) => {
-    try{
-    const tasks = await Tasks.find();
-    res.json(tasks);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' })
-    }
-});
-
-app.post('/tasks', async (req, res) => {
-    const { text, status } = req.body;
-    const task = new Task({ text, status });
-
-    try {
-        const savedTasks = await task.save();
-        res.json(savedTasks);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error '});
-    }
-});
-
+// Start server
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+  console.log(`Server is running on port ${port}`);
 });
+

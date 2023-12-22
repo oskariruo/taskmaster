@@ -18,6 +18,7 @@ export default function TaskForm( { addTask }){
     return (
         <Box>
             <Input
+                name='taskform'
                 type='text'
                 placeholder='Add a new task...'
                 value={newTask}

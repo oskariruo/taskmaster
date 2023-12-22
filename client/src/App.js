@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { Button, ThemeProvider, createTheme } from "@mui/material";
+import { Grid, Container, ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import Yesterday from "./pages/Yesterday";
 import Today from "./pages/Today";
 import Tomorrow from "./pages/Tomorrow";
+import Nav from "./components/Nav";
 
 export default function App() {
   const [tasks, setTasks] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
 
   const toggleTheme = () => {
+    console.log('Toggle Theme button clicked');
     setDarkMode(!darkMode);
   };
 
@@ -19,59 +21,105 @@ export default function App() {
     },
   });
 
-  const addTask = (task, status) => {
+
+
+  const addTask = async (task, location) => {
     const currentDate = new Date();
     let taskDate;
 
-    switch (status) {
-      case "today":
-        taskDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-        break;
-      case "yesterday":
-        taskDate = new Date(currentDate.getTime() - 24 * 60 * 60 * 1000);
-        break;
-      case "tomorrow":
-        taskDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
-        taskDate.setHours(0, 0, 0, 0);
-        break;
-      default:
-        taskDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+    if (location === "tomorrow") {
+      taskDate = new Date(currentDate);
+      taskDate.setDate(currentDate.getDate() + 1);
+    } else if (location === "yesterday") {
+      taskDate = new Date(currentDate);
+      taskDate.setDate(currentDate.getDate() - 1);
+    } else {
+      taskDate = new Date(
+        Date.UTC(
+          currentDate.getUTCFullYear(),
+          currentDate.getUTCMonth(),
+          currentDate.getUTCDate()
+        )
+      );
     }
-
-    setTasks([...tasks, { id: tasks.length + 1, text: task, status, date: taskDate }]);
-  };
-
-  const completeTask = (taskId) => {
-    const updatedTasks = tasks.map((task) => {
-      if (task.id === taskId) {
-        return { ...task, completed: true };
+    try {
+      const response = await fetch('http://localhost:3001/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: task, date: taskDate }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to add task: ${response.statusText}`);
       }
-      return task;
-    });
-
-    setTasks(updatedTasks);
+  
+      const savedTask = await response.json();
+      setTasks([...tasks, savedTask]);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  const moveTasksBasedOnDay = () => {
-    const currentDate = new Date();
-    const updatedTasks = tasks.map((task) => {
-      const taskDate = new Date(task.date);
-      const isToday = isSameDay(taskDate, currentDate);
-      const isTomorrow = isSameDay(new Date(currentDate.getTime() + 24 * 60 * 60 * 1000), taskDate);
-
-      switch (task.status) {
-        case "today":
-          return !isToday ? { ...task, status: "yesterday" } : task;
-        case "tomorrow":
-          return !isTomorrow ? { ...task, status: "today" } : task;
-        default:
-          return task;
+  const deleteTask = async (taskId) => {
+    try {
+      const response = await fetch(`http://localhost:3001/tasks/${taskId}`, {
+        method: 'DELETE',
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to delete task: ${response.statusText}`);
       }
-    });
-
-    setTasks(updatedTasks);
+  
+      // Update state after successful deletion
+      setTasks((prevTasks) => prevTasks.filter((task) => task._id !== taskId));
+    } catch (error) {
+      console.error(error);
+    }
   };
 
+  const handleCheckboxChange = async (taskId, checked) => {
+    try {
+      // Optimistic Update: Update state before waiting for the server response
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task._id === taskId ? { ...task, completed: checked } : task
+        )
+      );
+  
+      // Send request to update the task on the server
+      const response = await fetch(`http://localhost:3001/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-type': 'application/json',
+        },
+        body: JSON.stringify({ completed: checked }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to update task: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error(error);
+  
+      // Rollback the state in case of an error
+      fetchTasks(); // Re-fetch the tasks to get the current state
+    }
+  };
+  
+  const fetchTasks = async () => {
+    try {
+      const response = await fetch(`http://localhost:3001/tasks`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch tasks: ${response.statusText}`);
+      }
+      const data = await response.json();
+      setTasks(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   const isSameDay = (date1, date2) => {
     const d1 = new Date(date1);
     const d2 = new Date(date2);
@@ -82,35 +130,68 @@ export default function App() {
       d1.getDate() === d2.getDate()
     );
   };
+
+  const getYesterdayDate = () => {
+    const currentDate = new Date();
+    const yesterday = new Date(currentDate);
+    yesterday.setDate(currentDate.getDate() - 1);
+    return yesterday;
+  };
+
+  const getTomorrowDate = () => {
+    const currentDate = new Date();
+    const tomorrow = new Date(currentDate);
+    tomorrow.setDate(currentDate.getDate() + 1);
+    return tomorrow;
+  };
+
+  const filterTasksByDate = (date) => {
+    return tasks.filter((task) => isSameDay(task.date, date));
+  };
+
+  const todayTasks = filterTasksByDate(new Date());
+  const yesterdayTasks = filterTasksByDate(getYesterdayDate());
+  const tomorrowTasks = filterTasksByDate(getTomorrowDate());
+
+
 // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    moveTasksBasedOnDay();
+    fetchTasks();
   }, []);
 
   const router = createBrowserRouter([
     {
-      path: "/",
-      element: <Today tasks={tasks.filter((task) => task.status === "today")} addTask={(task) => addTask(task, "today")} completeTask={completeTask} />,
+      path: '/',
+      element: <Nav toggleTheme={toggleTheme} />,
     },
     {
       path: "/yesterday",
-      element: <Yesterday tasks={tasks.filter((task) => task.status === "yesterday")} addTask={(task) => addTask(task, "yesterday")} completeTask={completeTask} />,
+      element: <Yesterday tasks={yesterdayTasks} addTask={(task) => addTask(task, 'yesterday')} deleteTask={deleteTask} handleCheckboxChange={handleCheckboxChange}/>,
     },
     {
       path: "/today",
-      element: <Today tasks={tasks.filter((task) => task.status === "today")} addTask={(task) => addTask(task, "today")} completeTask={completeTask} />,
+      element: <Today tasks={todayTasks} addTask={(task) => addTask(task)} deleteTask={deleteTask} handleCheckboxChange={handleCheckboxChange}/>,
     },
     {
       path: "/tomorrow",
-      element: <Tomorrow tasks={tasks.filter((task) => task.status === "tomorrow")} addTask={(task) => addTask(task, "tomorrow")} completeTask={completeTask} />,
+      element: <Tomorrow tasks={tomorrowTasks} addTask={(task) => addTask(task, 'tomorrow')} deleteTask={deleteTask} handleCheckboxChange={handleCheckboxChange}/>,
     },
   ]);
 
   return (
     <React.StrictMode>
       <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Container>
+      <Grid
+      container
+            direction="column"
+            justifyContent="center"
+            alignItems="center"
+            style={{ minHeight: "100vh" }}>
         <RouterProvider router={router} />
-        <Button onClick={toggleTheme}>Teema </Button>
+      </Grid>
+      </Container>
       </ThemeProvider>
     </React.StrictMode>
   );

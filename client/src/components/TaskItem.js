@@ -1,14 +1,26 @@
 import React from "react";
+import { ListItem, ListItemText, Button, Checkbox } from "@mui/material";
 
-export default function ListItem({ task, onComplete }) {
-    return (
-        <li>
-        <span style={{ textDecoration: task.completed ? 'line-through' : 'none'}}>
-            {task.text}
-        </span>{' '}
-        {!task.completed && (
-            <button onClick={() => onComplete(task.id)}>Complete</button>
-        )}
-        </li>
-    )
+export default function TaskItem({ task, onDelete, onCheckToggle }) {
+
+  const handleDelete = () => {
+    onDelete(task._id);
+  };
+
+  const handleCheckToggle = () => {
+    onCheckToggle(task._id, !task.completed)
+  }
+
+  return (
+    <ListItem>
+        <Checkbox 
+          checked={task.completed} 
+          onChange={handleCheckToggle}
+        />
+        <ListItemText>
+          {task.text}
+        </ListItemText>
+      <Button onClick={handleDelete}>Delete</Button>
+    </ListItem>
+  );
 }
