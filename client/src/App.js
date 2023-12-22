@@ -5,10 +5,14 @@ import Yesterday from "./pages/Yesterday";
 import Today from "./pages/Today";
 import Tomorrow from "./pages/Tomorrow";
 import Nav from "./components/Nav";
+import ConfirmationDialog from "./components/ConfirmationDialog";
+
 
 export default function App() {
   const [tasks, setTasks] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
+  const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
 
   const toggleTheme = () => {
     console.log('Toggle Theme button clicked');
@@ -20,8 +24,6 @@ export default function App() {
       mode: darkMode ? "dark" : "light",
     },
   });
-
-
 
   const addTask = async (task, location) => {
     const currentDate = new Date();
@@ -62,20 +64,35 @@ export default function App() {
     }
   };
 
+
   const deleteTask = async (taskId) => {
+    setSelectedTaskId(taskId);
+    setConfirmationDialogOpen(true);
+  };
+
+  const closeConfirmationDialog = () => {
+    setConfirmationDialogOpen(false);
+    setSelectedTaskId(null);
+  };
+
+
+  const confirmDeletion = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/tasks/${taskId}`, {
+      const response = await fetch(`http://localhost:3001/tasks/${selectedTaskId}`, {
         method: 'DELETE',
       });
-  
+
       if (!response.ok) {
         throw new Error(`Failed to delete task: ${response.statusText}`);
       }
-  
+
       // Update state after successful deletion
-      setTasks((prevTasks) => prevTasks.filter((task) => task._id !== taskId));
+      fetchTasks();
     } catch (error) {
       console.error(error);
+    } finally {
+      // Close the confirmation dialog regardless of the deletion result
+      closeConfirmationDialog();
     }
   };
 
@@ -192,6 +209,11 @@ export default function App() {
         <RouterProvider router={router} />
       </Grid>
       </Container>
+      <ConfirmationDialog
+        open={confirmationDialogOpen}
+        onClose={closeConfirmationDialog}
+        onConfirm={confirmDeletion}
+      />
       </ThemeProvider>
     </React.StrictMode>
   );
