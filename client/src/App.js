@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Grid, Container, ThemeProvider, createTheme, CssBaseline } from "@mui/material";
+import Login from "./pages/Login";
 import Yesterday from "./pages/Yesterday";
 import Today from "./pages/Today";
 import Tomorrow from "./pages/Tomorrow";
@@ -170,15 +171,26 @@ export default function App() {
   const tomorrowTasks = filterTasksByDate(getTomorrowDate());
 
 
-// eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    checkAuthentication();
+  }, [checkAuthentication]);
+
+  useEffect(() => {
+    if (!authenticated) {
+      router.navigate("/login");
+    } else {
+      fetchTasks();
+    }
+  }, [authenticated]);
 
   const router = createBrowserRouter([
     {
       path: '/',
       element: <Nav toggleTheme={toggleTheme} />,
+    },
+    {
+      path: "/login",
+      element: <Login onLogin={checkAuthentication} />,
     },
     {
       path: "/yesterday",
