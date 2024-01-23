@@ -6,9 +6,10 @@ import Today from "./pages/Today";
 import Tomorrow from "./pages/Tomorrow";
 import Nav from "./components/Nav";
 import ConfirmationDialog from "./components/ConfirmationDialog";
-
+import useAuth from './auth/auth';
 
 export default function App() {
+  const { authenticated, checkAuthentication, handleLogout } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);

@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dbConfig = require('./config/db');
 const routes = require('./routes/tasks');
-
+const authRoutes = require('./routes/auth');
 
 const app = express();
 app.use(cors());
@@ -23,6 +23,7 @@ mongoose.connect(dbConfig.mongoURI, { useNewUrlParser: true, useUnifiedTopology:
 
 // Use routes
 app.use('/tasks', routes); // Using /api as a base route
+app.use('/auth', authRoutes);
 
 // Start server
 app.listen(port, () => {
