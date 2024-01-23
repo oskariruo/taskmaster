@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Grid, Container, ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import Login from "./pages/Login";
+import Register from './pages/Register';
 import Yesterday from "./pages/Yesterday";
 import Today from "./pages/Today";
 import Tomorrow from "./pages/Tomorrow";
@@ -191,6 +192,10 @@ export default function App() {
     {
       path: "/login",
       element: <Login onLogin={checkAuthentication} />,
+    },
+    {
+      path: "/register",
+      element: <Register />,
     },
     {
       path: "/yesterday",

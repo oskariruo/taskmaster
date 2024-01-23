@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { TextField, Button, Container, Paper, Typography } from "@mui/material";
 import { loginUser } from "../auth/api";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -46,6 +47,9 @@ const Login = () => {
         >
           Login
         </Button>
+        <Typography>
+            Don't have an account? <Link to="/register">Register</Link>
+        </Typography>
       </Paper>
     </Container>
   );
