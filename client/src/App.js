@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { Grid, Container, ThemeProvider, createTheme, CssBaseline } from "@mui/material";
+import { createBrowserRouter, RouterProvider, Navigate} from "react-router-dom";
+import { Grid, Container, ThemeProvider, createTheme, CssBaseline, Button } from "@mui/material";
 import Login from "./pages/Login";
 import Register from './pages/Register';
 import Yesterday from "./pages/Yesterday";
@@ -8,10 +8,11 @@ import Today from "./pages/Today";
 import Tomorrow from "./pages/Tomorrow";
 import Nav from "./components/Nav";
 import ConfirmationDialog from "./components/ConfirmationDialog";
+import PrivateRoute from './components/PrivateRoute';
 import useAuth from './auth/auth';
 
 export default function App() {
-  const { authenticated, checkAuthentication, handleLogout } = useAuth();
+  const { authenticated, checkAuthentication } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
@@ -21,7 +22,6 @@ export default function App() {
     console.log('Toggle Theme button clicked');
     setDarkMode(!darkMode);
   };
-
   const theme = createTheme({
     palette: {
       mode: darkMode ? "dark" : "light",
@@ -171,66 +171,64 @@ export default function App() {
   const yesterdayTasks = filterTasksByDate(getYesterdayDate());
   const tomorrowTasks = filterTasksByDate(getTomorrowDate());
 
-
-  useEffect(() => {
-    checkAuthentication();
-  }, [checkAuthentication]);
-
-  useEffect(() => {
-    if (!authenticated) {
-      router.navigate("/login");
-    } else {
-      fetchTasks();
-    }
-  }, [authenticated]);
-
   const router = createBrowserRouter([
-    {
-      path: '/',
-      element: <Nav toggleTheme={toggleTheme} />,
-    },
-    {
-      path: "/login",
-      element: <Login onLogin={checkAuthentication} />,
-    },
+  { path: '/', element: <Nav toggleTheme={toggleTheme} /> },
+  {
+    path: "/login",
+    element: <Login onLogin={checkAuthentication} isAuthenticated={authenticated} />,
+  },
     {
       path: "/register",
       element: <Register />,
     },
     {
       path: "/yesterday",
-      element: <Yesterday tasks={yesterdayTasks} addTask={(task) => addTask(task, 'yesterday')} deleteTask={deleteTask} handleCheckboxChange={handleCheckboxChange}/>,
-    },
-    {
+      element: <Yesterday tasks={yesterdayTasks} addTask={(task) => addTask(task, 'yesterday')} deleteTask={deleteTask} handleCheckboxChange={handleCheckboxChange} /> },
+      {
       path: "/today",
-      element: <Today tasks={todayTasks} addTask={(task) => addTask(task)} deleteTask={deleteTask} handleCheckboxChange={handleCheckboxChange}/>,
-    },
-    {
+      element: <Today tasks={todayTasks} addTask={(task) => addTask(task)} deleteTask={deleteTask} handleCheckboxChange={handleCheckboxChange} />
+      },
+      {
       path: "/tomorrow",
-      element: <Tomorrow tasks={tomorrowTasks} addTask={(task) => addTask(task, 'tomorrow')} deleteTask={deleteTask} handleCheckboxChange={handleCheckboxChange}/>,
-    },
+      element: <Tomorrow tasks={tomorrowTasks} addTask={(task) => addTask(task, 'tomorrow')} deleteTask={deleteTask} handleCheckboxChange={handleCheckboxChange} />
+      },
   ]);
+
+  useEffect(() => {
+    checkAuthentication();
+  }, [authenticated]);
+
+  useEffect(() => {
+    if (authenticated) {
+      fetchTasks();
+    }
+  }, [authenticated]);
+
+
 
   return (
     <React.StrictMode>
+      <RouterProvider router={router}>
       <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Container>
-      <Grid
-      container
+        <CssBaseline />
+        <Container>
+          <Grid
+            container
             direction="column"
             justifyContent="center"
             alignItems="center"
-            style={{ minHeight: "100vh" }}>
-        <RouterProvider router={router} />
-      </Grid>
-      </Container>
-      <ConfirmationDialog
-        open={confirmationDialogOpen}
-        onClose={closeConfirmationDialog}
-        onConfirm={confirmDeletion}
-      />
+            style={{ minHeight: "100vh" }}
+          >
+            {/* Rest of your components */}
+          </Grid>
+          <ConfirmationDialog
+            open={confirmationDialogOpen}
+            onClose={closeConfirmationDialog}
+            onConfirm={confirmDeletion}
+          />
+        </Container>
       </ThemeProvider>
+    </RouterProvider>
     </React.StrictMode>
   );
 }

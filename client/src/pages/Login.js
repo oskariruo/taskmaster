@@ -1,21 +1,24 @@
 import React, { useState } from "react";
 import { TextField, Button, Container, Paper, Typography } from "@mui/material";
 import { loginUser } from "../auth/api";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import useAuth from "../auth/auth";
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const { handleLogin } = useAuth(); // Use the handleLogin function
+  const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleLoginAttempt = async () => {
     try {
       const response = await loginUser(username, password);
-
       const token = response.token;
-
       localStorage.setItem('token', token);
 
       console.log('Login successful');
+      handleLogin();
+      navigate("/today")
     } catch (error) {
       console.log('Login failed', error);
     }
@@ -43,7 +46,7 @@ const Login = () => {
         />
         <Button 
           variant="contained" 
-          onClick={handleLogin}
+          onClick={handleLoginAttempt}
         >
           Login
         </Button>

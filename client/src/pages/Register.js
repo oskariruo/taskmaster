@@ -45,6 +45,7 @@ const Register = () => {
               margin="normal"
               fullWidth
               label="Password"
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />

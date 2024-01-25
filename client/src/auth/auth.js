@@ -6,37 +6,45 @@ const useAuth = () => {
 
     const checkAuthentication = async () => {
         try {
-            const token = localStorage.getItem('token');
-
-            if (token) {
-                const response = await authApi.verifyToken(token);
-
-                if (response.authenticated) {
-                    setAuthenticated(true);
-                } else {
-                    setAuthenticated(false);
-                    localStorage.removeItem('token');
-                }
+          const token = localStorage.getItem('token');
+      
+          if (token) {
+            const response = await authApi.verifyToken(token);
+      
+            console.log('Server Response:', response);
+      
+            if (response.message === 'Token verified') {
+              console.log('User authenticated');
+              setAuthenticated(true);
+            } else {
+              console.log('User not authenticated');
+              setAuthenticated(false);
+              localStorage.removeItem('token');
             }
+          }
         } catch (error) {
-            console.log('Error checking authentication:', error);
+          console.log('Error checking authentication:', error);
         }
-    }
+      };
 
     const handleLogout = () => {
         setAuthenticated(false);
         localStorage.removeItem('token');
     }
 
+    const handleLogin = () => {
+        setAuthenticated(true);
+    }
 
 useEffect(() => {
     checkAuthentication();
-}, []);
+}, [authenticated]);
 
 return {
     authenticated,
     checkAuthentication,
     handleLogout,
+    handleLogin
     }
 }
 
