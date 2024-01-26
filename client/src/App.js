@@ -11,23 +11,30 @@ import ConfirmationDialog from "./components/ConfirmationDialog";
 import PrivateRoute from './components/PrivateRoute';
 import useAuth from './auth/auth';
 
+// Main App Component
 export default function App() {
+
+  // Authentication and state management
   const { authenticated, checkAuthentication } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
 
+  // Theme handling
   const toggleTheme = () => {
     console.log('Toggle Theme button clicked');
     setDarkMode(!darkMode);
   };
+
   const theme = createTheme({
     palette: {
       mode: darkMode ? "dark" : "light",
     },
   });
 
+  // Task management functions
+  //Adding a task
   const addTask = async (task, location) => {
     const currentDate = new Date();
     let taskDate;
@@ -67,18 +74,19 @@ export default function App() {
     }
   };
 
-
+  //Deleting a task
   const deleteTask = async (taskId) => {
     setSelectedTaskId(taskId);
     setConfirmationDialogOpen(true);
   };
 
+  //Closing dialog
   const closeConfirmationDialog = () => {
     setConfirmationDialogOpen(false);
     setSelectedTaskId(null);
   };
 
-
+  //Confirming deletion of an item
   const confirmDeletion = async () => {
     try {
       const response = await fetch(`http://localhost:3001/tasks/${selectedTaskId}`, {
@@ -97,16 +105,16 @@ export default function App() {
     }
   };
 
+  //Checkbox input handling
   const handleCheckboxChange = async (taskId, checked) => {
     try {
-      // Optimistic Update: Update state before waiting for the server response
+      // this is an optimistic update: Update state before waiting for the server response
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
           task._id === taskId ? { ...task, completed: checked } : task
         )
       );
   
-      // Send request to update the task on the server
       const response = await fetch(`http://localhost:3001/tasks/${taskId}`, {
         method: 'PATCH',
         headers: {
@@ -120,12 +128,12 @@ export default function App() {
       }
     } catch (error) {
       console.error(error);
-  
-      // Rollback the state in case of an error
-      fetchTasks(); // Re-fetch the tasks to get the current state
+
+      fetchTasks();
     }
   };
   
+  //Fetching ALL tasks
   const fetchTasks = async () => {
     try {
       const response = await fetch(`http://localhost:3001/tasks`);
@@ -138,6 +146,8 @@ export default function App() {
       console.error(error);
     }
   };
+
+  //Logic for sorting dates
   const isSameDay = (date1, date2) => {
     const d1 = new Date(date1);
     const d2 = new Date(date2);
@@ -149,6 +159,7 @@ export default function App() {
     );
   };
 
+  //Function to getting yesterdays date
   const getYesterdayDate = () => {
     const currentDate = new Date();
     const yesterday = new Date(currentDate);
@@ -156,6 +167,7 @@ export default function App() {
     return yesterday;
   };
 
+  //Function for getting tomorrows date
   const getTomorrowDate = () => {
     const currentDate = new Date();
     const tomorrow = new Date(currentDate);
@@ -163,6 +175,7 @@ export default function App() {
     return tomorrow;
   };
 
+  //Filtering tasks to get date specific tasks
   const filterTasksByDate = (date) => {
     return tasks.filter((task) => isSameDay(task.date, date));
   };
@@ -171,6 +184,7 @@ export default function App() {
   const yesterdayTasks = filterTasksByDate(getYesterdayDate());
   const tomorrowTasks = filterTasksByDate(getTomorrowDate());
 
+  //Routing
   const router = createBrowserRouter([
   { path: '/', element: <Nav toggleTheme={toggleTheme} /> },
   {
@@ -183,20 +197,20 @@ export default function App() {
     },
     {
       path: "/yesterday",
-      element: <Yesterday tasks={yesterdayTasks} addTask={(task) => addTask(task, 'yesterday')} deleteTask={deleteTask} handleCheckboxChange={handleCheckboxChange} /> },
+      element: <PrivateRoute element={<Yesterday tasks={yesterdayTasks} addTask={(task) => addTask(task, 'yesterday')} deleteTask={deleteTask} handleCheckboxChange={handleCheckboxChange} />} />, },
       {
       path: "/today",
-      element: <Today tasks={todayTasks} addTask={(task) => addTask(task)} deleteTask={deleteTask} handleCheckboxChange={handleCheckboxChange} />
+      element: <PrivateRoute element={<Today tasks={todayTasks} addTask={(task) => addTask(task)} deleteTask={deleteTask} handleCheckboxChange={handleCheckboxChange} />} />,
       },
       {
       path: "/tomorrow",
-      element: <Tomorrow tasks={tomorrowTasks} addTask={(task) => addTask(task, 'tomorrow')} deleteTask={deleteTask} handleCheckboxChange={handleCheckboxChange} />
-      },
+      element: <PrivateRoute element={<Tomorrow tasks={tomorrowTasks} addTask={(task) => addTask(task, 'tomorrow')} deleteTask={deleteTask} handleCheckboxChange={handleCheckboxChange} />} />,
+      },      
   ]);
 
   useEffect(() => {
     checkAuthentication();
-  }, [authenticated]);
+  }, []);
 
   useEffect(() => {
     if (authenticated) {

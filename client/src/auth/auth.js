@@ -37,8 +37,9 @@ const useAuth = () => {
     }
 
 useEffect(() => {
+  console.log('useAuth - useEffect triggered');
     checkAuthentication();
-}, [authenticated]);
+}, []);
 
 return {
     authenticated,
