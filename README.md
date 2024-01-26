@@ -17,10 +17,15 @@ The Task Master App is a web application designed to help users manage their dai
 
 ## Technologies Used
 
-- React: A JavaScript library for building user interfaces
-- Material-UI: A popular React UI framework
-- React Router: A library for handling navigation in React applications
-- Node.js: A JavaScript runtime for server-side development
-- Express: A web application framework for Node.js
-- MongoDB: A NoSQL database for storing task data
-- JWT: JSON Web Tokens for secure user authentication
+  - **Frontend:**
+    - [React](https://react.dev/): A JavaScript library for building user interfaces
+    - [Material-UI](https://mui.com/): A popular React UI framework
+    - [React Router](https://reactrouter.com/en/main): A library for handling navigation in React applications
+  - **Backend:**
+    - [Node.js](https://nodejs.org/en): A JavaScript runtime for server-side development
+    - [Express](https://expressjs.com/): A web application framework for Node.js
+    - [MongoDB](https://www.mongodb.com/): A NoSQL database for storing task data with Mongoose for data modeling
+    - [JWT](https://jwt.io/): JSON Web Tokens for secure user authentication
+    - [Bcrypt](https://www.npmjs.com/package/bcrypt): Ensures secure password handling
+    - [Axios](https://axios-http.com/): Manages server-client communication
+    - [CORS](https://www.npmjs.com/package/cors): Enables seamless integration
